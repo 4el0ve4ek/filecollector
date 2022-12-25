@@ -3,7 +3,7 @@ package main.java.graph;
 import java.util.*;
 
 public class DirectionalGraph<Vertex> {
-    Map<Vertex, List<Vertex>> graph = new HashMap<>();
+    private final Map<Vertex, List<Vertex>> graph = new HashMap<>();
 
     public DirectionalGraph() {
     }

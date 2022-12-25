@@ -14,7 +14,7 @@ public class FilesReader implements Reader {
 
     @Override
     public String ReadAll(String filename) throws IOException {
-        return String.join("\n", ReadLines(filename));
+        return Files.readString(Path.of(filename));
     }
 
     @Override
