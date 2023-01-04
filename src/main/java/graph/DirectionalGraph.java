@@ -8,41 +8,55 @@ public class DirectionalGraph<Vertex> {
     public DirectionalGraph() {
     }
 
-    public void AddEdge(Vertex from, Vertex to) {
-        var neighbours = graph.get(from);
-        if (neighbours == null) {
-            neighbours = new ArrayList<>();
+    public void AddVertexIfNotExist(Vertex vertex) {
+        if (graph.containsKey(vertex)) {
+            return;
         }
+        graph.put(vertex, new ArrayList<>());
+    }
+
+    public void AddEdge(Vertex from, Vertex to) {
+        if (!graph.containsKey(to) && !graph.containsKey(from)) {
+            return;
+        }
+
+        var neighbours = graph.get(from);
         neighbours.add(to);
         graph.put(from, neighbours);
     }
 
-    public boolean HasCycles() {
+    public List<Vertex> GetCycle() {
         if (graph.isEmpty()) {
-            return false;
+            return List.of();
         }
-        Set<Vertex> visited = new HashSet<>();
+        Map<Vertex, Integer> colors = new HashMap<>();
         for (var vertex : getKeys()) {
-            if (!visited.contains(vertex) && checkCycles(vertex, null, visited)) {
-                return true;
+            Integer vertexColor = colors.get(vertex);
+            if (vertexColor != null && vertexColor == (2) && checkCycles(vertex, colors)) {
+                return colors.entrySet()
+                        .stream()
+                        .filter(x -> x.getValue() == 1)
+                        .map(Map.Entry::getKey)
+                        .toList();
             }
         }
-        return false;
+        return List.of();
     }
 
-    private boolean checkCycles(Vertex current, Vertex parent, Set<Vertex> visited) {
-        if (visited.contains(current)) {
-            return true;
-        }
-        visited.add(current);
+    private boolean checkCycles(Vertex current, Map<Vertex, Integer> colors) {
+        colors.put(current, 1);
         for (var next : graph.get(current)) {
-            if (next.equals(parent)) {
+            Integer nextVertexColor = colors.get(next);
+            if (nextVertexColor != null && nextVertexColor == 2) {
                 continue;
+            } else if (nextVertexColor != null && nextVertexColor == 1) {
+                return true;
             }
-            if (checkCycles(next, current, visited)) {
+            if (checkCycles(next, colors)) {
                 return true;
             }
         }
+        colors.put(current, 2);
         return false;
     }
 
@@ -62,7 +76,7 @@ public class DirectionalGraph<Vertex> {
         }
         visited.add(current);
         for (var next : graph.get(current)) {
-            if (visited.contains(current)) {
+            if (visited.contains(next)) {
                 continue;
             }
             processTopSort(next, visited, result);
