@@ -10,11 +10,11 @@ import java.nio.file.Path;
 /**
  * FilesReader -- читает  содержимое файлов, находящихся локально
  */
-public class FilesReader implements Reader {
+public class LocalFilesReader implements Reader {
 
     private final Logger logger;
 
-    public FilesReader(Logger logger) {
+    public LocalFilesReader(Logger logger) {
         this.logger = logger;
     }
 
