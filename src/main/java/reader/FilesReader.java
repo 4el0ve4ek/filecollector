@@ -1,9 +1,10 @@
 package main.java.reader;
 
+import main.java.logger.Logger;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.List;
 
 
 /**
@@ -11,14 +12,23 @@ import java.util.List;
  */
 public class FilesReader implements Reader {
 
+    private final Logger logger;
 
-    @Override
-    public String ReadAll(String filename) throws IOException {
-        return Files.readString(Path.of(filename));
+    public FilesReader(Logger logger) {
+        this.logger = logger;
     }
 
     @Override
-    public List<String> ReadLines(String filename) throws IOException {
-        return Files.readAllLines(Path.of(filename));
+    public String ReadAll(Path filePath) {
+
+        try {
+            return Files.readString(filePath);
+        } catch (IOException e) {
+            logger.Warnf("unable to read file '%s'", filePath);
+        } catch (SecurityException e) {
+            logger.Errorf("thread not allowed to read file '%s'", filePath);
+        }
+
+        return "";
     }
 }

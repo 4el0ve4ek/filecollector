@@ -1,6 +1,7 @@
 package main.java.application;
 
 import main.java.graph.DirectionalGraph;
+import main.java.logger.Logger;
 import main.java.reader.Reader;
 
 import java.io.IOException;
@@ -14,46 +15,42 @@ import java.util.regex.Pattern;
 
 public class Application {
     private final Reader reader;
+    private final Logger logger;
 
-    public Application(Reader reader) {
+    public Application(Logger logger, Reader reader) {
         this.reader = reader;
+        this.logger = logger;
     }
 
     public void Process(String rootDirectory) {
         var rootPath = Path.of(rootDirectory);
 
         if (!Files.exists(rootPath)) {
-            System.out.printf("file or directory '%s' not exist\n", rootDirectory);
+            logger.Errorf("file or directory '%s' not exist\n", rootDirectory);
             return;
         }
 
         var allFiles = getSubFiles(rootPath);
 
-//        allFiles = allFiles.stream().map(path -> rootPath.relativize(path.normalize())).toList();
-
         var dependencyGraph = buildGraphOfDependencies(allFiles, rootPath);
 
         var cycle = dependencyGraph.GetCycle();
         if (!cycle.isEmpty()) {
-            System.out.println("there is a cycle dependency! abort execution!");
-            cycle.forEach(System.out::println);
+            logger.Error("there is a cycle dependency! abort execution!");
+            cycle.forEach(logger::Warn);
             return;
         }
 
-        dependencyGraph.GetTopSort().forEach(System.out::println);
+        dependencyGraph.GetTopSort().forEach(logger::Info);
     }
 
     private DirectionalGraph<Path> buildGraphOfDependencies(List<Path> filesPath, Path rootPath) {
         var result = new DirectionalGraph<Path>();
+
         for (var file : filesPath) {
             result.AddVertexIfNotExist(file);
-            String text = "";
 
-            try {
-                text = Files.readString(file);
-            } catch (IOException e) {
-                System.out.printf("unable to read file '%s'\n", file);
-            }
+            String text = reader.ReadAll(file);
 
             Pattern pattern = Pattern.compile("require '([^']+)'");
             Matcher mathcer = pattern.matcher(text);
@@ -90,7 +87,7 @@ public class Application {
         try (var list = Files.list(path)) {
             result = list.toList();
         } catch (IOException exception) {
-            System.out.printf("unable to list the contents of folder %s\n", path);
+            logger.Warnf("unable to list the contents of folder %s\n", path);
         }
 
         return result;

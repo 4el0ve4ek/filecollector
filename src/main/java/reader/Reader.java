@@ -1,21 +1,13 @@
 package main.java.reader;
 
-import java.io.IOException;
-import java.util.List;
+import java.nio.file.Path;
 
 public interface Reader {
 
     /**
-     * @param filename - имя файла, который надо прочесть
-     * @return Все, что содержиться в файле
-     * @throws IOException - могут возникнуть ошибки при работе с файлами
+     * @param filePath - имя файла, который надо прочесть
+     * @return Все, что содержиться в файле, или пустую строку, если возникла ошибка.
      */
-    String ReadAll(String filename) throws IOException;
+    String ReadAll(Path filePath);
 
-    /**
-     * @param filename - имя файла, который надо прочесть
-     * @return Массив строк, которые находяться в файле
-     * @throws IOException - могут возникнуть ошибки при работе с файлами
-     */
-    List<String> ReadLines(String filename) throws IOException;
 }
