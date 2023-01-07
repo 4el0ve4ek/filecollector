@@ -6,9 +6,8 @@ import main.java.reader.Reader;
 
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -44,11 +43,13 @@ public class Application {
 
         var resultFiles = dependencyGraph.GetTopSort();
 
-        logger.Info("\nProcess file in following order:\n");
+        logger.Info("\nProcess file in following order:");
         resultFiles.forEach(logger::Warn);
 
         var resultText = collectAllText(resultFiles);
-        var outputPath = rootPath.getParent().resolve("result.txt");
+        Path outputPath = rootPath.getParent().resolve("result.txt");
+
+        logger.Infof("\nCollecting result here '%s'", outputPath);
 
         writeTextToFile(outputPath, resultText);
     }
@@ -66,7 +67,14 @@ public class Application {
             Matcher mathcer = pattern.matcher(text);
 
             while (mathcer.find()) {
-                result.AddEdge(rootPath.resolve(mathcer.group(1)), file);
+                Path requiredFile;
+                try {
+                    requiredFile = rootPath.resolve(mathcer.group(1));
+                } catch (InvalidPathException exception) {
+                    logger.Warnf("unable to resolve path of require '%s'", mathcer.group(1));
+                    continue;
+                }
+                result.AddEdge(requiredFile, file);
             }
         }
         return result;
@@ -74,33 +82,17 @@ public class Application {
 
     private List<Path> getSubFiles(Path path) {
 
-        if (Files.isRegularFile(path)) {
-            if (!Files.isReadable(path)) {
-                return List.of();
-            }
-            return List.of(path);
-        }
-
-        if (!Files.isDirectory(path)) {
-            return List.of();
-        }
-
-        return getDirectoryFiles(path).stream()
-                .map(this::getSubFiles)
-                .flatMap(Collection::stream)
-                .toList();
-    }
-
-    private List<Path> getDirectoryFiles(Path path) {
-        List<Path> result = new ArrayList<>();
-
-        try (var list = Files.list(path)) {
-            result = list.toList();
+        try (var stream = Files.walk(path)) {
+            return stream.filter(Files::isRegularFile)
+                    .filter(Files::isReadable)
+                    .toList();
         } catch (IOException exception) {
-            logger.Warnf("unable to list the contents of folder %s\n", path);
+            logger.Warnf("unable to get subfiles of '%s'. io exception have been caught.", path);
+        } catch (SecurityException exception) {
+            logger.Warnf("unable to get subfiles of '%s'. Some permission was not provided", path);
         }
 
-        return result;
+        return List.of();
     }
 
     private String collectAllText(List<Path> files) {
@@ -114,6 +106,8 @@ public class Application {
             Files.writeString(pathToFile, text);
         } catch (IOException e) {
             logger.Warnf("unable to write to file '%s'. io exception have been caught.", pathToFile);
+        } catch (SecurityException e) {
+            logger.Warnf("unable to write to file '%s'. Some permission was not provided", pathToFile);
         }
     }
 }

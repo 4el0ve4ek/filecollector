@@ -2,7 +2,17 @@ package main.java.graph;
 
 import java.util.*;
 
+/**
+ * DirectionalGraph -- класс содержащий функции для работы с ориентированными графами
+ *
+ * @param <Vertex> - тип вершин
+ */
 public class DirectionalGraph<Vertex extends Comparable<Vertex>> {
+
+    private static final int NOT_VISITED = 0;
+    private static final int VISITED = 1;
+    private static final int FINISHED = 2;
+
     private final Map<Vertex, List<Vertex>> graph = new HashMap<>();
 
     public DirectionalGraph() {
@@ -30,12 +40,18 @@ public class DirectionalGraph<Vertex extends Comparable<Vertex>> {
             return List.of();
         }
         Map<Vertex, Integer> colors = new HashMap<>();
+
+        for (var vertex : getKeys()) {
+            colors.put(vertex, NOT_VISITED);
+        }
+
         for (var vertex : getKeys()) {
             Integer vertexColor = colors.get(vertex);
-            if (vertexColor != null && vertexColor == (2) && checkCycles(vertex, colors)) {
+            if (vertexColor == NOT_VISITED && checkCycles(vertex, colors)) {
+
                 return colors.entrySet()
                         .stream()
-                        .filter(x -> x.getValue() == 1)
+                        .filter(x -> x.getValue() == VISITED)
                         .map(Map.Entry::getKey)
                         .toList();
             }
@@ -44,19 +60,19 @@ public class DirectionalGraph<Vertex extends Comparable<Vertex>> {
     }
 
     private boolean checkCycles(Vertex current, Map<Vertex, Integer> colors) {
-        colors.put(current, 1);
+        colors.put(current, VISITED);
         for (var next : graph.get(current)) {
-            Integer nextVertexColor = colors.get(next);
-            if (nextVertexColor != null && nextVertexColor == 2) {
+            int nextVertexColor = colors.get(next);
+            if (nextVertexColor == FINISHED) {
                 continue;
-            } else if (nextVertexColor != null && nextVertexColor == 1) {
+            } else if (nextVertexColor == VISITED) {
                 return true;
             }
             if (checkCycles(next, colors)) {
                 return true;
             }
         }
-        colors.put(current, 2);
+        colors.put(current, FINISHED);
         return false;
     }
 

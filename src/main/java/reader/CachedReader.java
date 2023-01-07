@@ -4,6 +4,10 @@ import java.nio.file.Path;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+/**
+ * CachedReader -- кеширующая обертка над читальщиком файлов.
+ * Нужна для того, чтобы не читать лишний раз с локального файла и чтобы везде был одинаковый текст.
+ */
 public class CachedReader implements Reader {
 
     private final Map<Path, String> cache = new ConcurrentHashMap<>();
