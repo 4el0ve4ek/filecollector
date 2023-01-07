@@ -12,6 +12,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 public class Application {
     private final Reader reader;
@@ -41,15 +42,24 @@ public class Application {
             return;
         }
 
-        dependencyGraph.GetTopSort().forEach(logger::Info);
+        var resultFiles = dependencyGraph.GetTopSort();
+
+        logger.Info("\nProcess file in following order:\n");
+        resultFiles.forEach(logger::Warn);
+
+        var resultText = collectAllText(resultFiles);
+        var outputPath = rootPath.getParent().resolve("result.txt");
+
+        writeTextToFile(outputPath, resultText);
     }
 
     private DirectionalGraph<Path> buildGraphOfDependencies(List<Path> filesPath, Path rootPath) {
         var result = new DirectionalGraph<Path>();
-
         for (var file : filesPath) {
             result.AddVertexIfNotExist(file);
+        }
 
+        for (var file : filesPath) {
             String text = reader.ReadAll(file);
 
             Pattern pattern = Pattern.compile("require '([^']+)'");
@@ -93,4 +103,17 @@ public class Application {
         return result;
     }
 
+    private String collectAllText(List<Path> files) {
+        return files.stream()
+                .map(reader::ReadAll)
+                .collect(Collectors.joining(System.lineSeparator()));
+    }
+
+    private void writeTextToFile(Path pathToFile, String text) {
+        try {
+            Files.writeString(pathToFile, text);
+        } catch (IOException e) {
+            logger.Warnf("unable to write to file '%s'. io exception have been caught.", pathToFile);
+        }
+    }
 }

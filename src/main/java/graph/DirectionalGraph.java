@@ -2,7 +2,7 @@ package main.java.graph;
 
 import java.util.*;
 
-public class DirectionalGraph<Vertex> {
+public class DirectionalGraph<Vertex extends Comparable<Vertex>> {
     private final Map<Vertex, List<Vertex>> graph = new HashMap<>();
 
     public DirectionalGraph() {
@@ -16,7 +16,7 @@ public class DirectionalGraph<Vertex> {
     }
 
     public void AddEdge(Vertex from, Vertex to) {
-        if (!graph.containsKey(to) && !graph.containsKey(from)) {
+        if (!graph.containsKey(to) || !graph.containsKey(from)) {
             return;
         }
 
@@ -86,6 +86,6 @@ public class DirectionalGraph<Vertex> {
 
 
     private List<Vertex> getKeys() {
-        return new ArrayList<>(graph.keySet());
+        return graph.keySet().stream().sorted(Comparator.reverseOrder()).toList();
     }
 }
