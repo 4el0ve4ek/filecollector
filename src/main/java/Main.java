@@ -1,17 +1,17 @@
 package main.java;
 
 import main.java.application.Application;
-import main.java.logger.StdLogger;
-import main.java.reader.CachedReader;
-import main.java.reader.LocalFilesReader;
+import main.java.logger.ConsoleLogger;
+import main.java.reader.CachedFileReader;
+import main.java.reader.LocalFileReader;
 
 public class Main {
     public static void main(String[] args) {
 
-        var logger = new StdLogger();
+        var logger = new ConsoleLogger();
 
-        var localFileReader = new LocalFilesReader(logger);
-        var cachedFileReader = new CachedReader(localFileReader); // TODO: use cache just for one Process call (or invalidate)
+        var localFileReader = new LocalFileReader(logger);
+        var cachedFileReader = new CachedFileReader(localFileReader); // TODO: use cache just for one Process call (or invalidate)
         var application = new Application(logger, cachedFileReader);
 
         if (args.length < 1) {

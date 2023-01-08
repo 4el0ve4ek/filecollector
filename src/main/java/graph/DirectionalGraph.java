@@ -3,9 +3,9 @@ package main.java.graph;
 import java.util.*;
 
 /**
- * DirectionalGraph -- класс содержащий функции для работы с ориентированными графами
+ * DirectionalGraph -- class which contains some function for work with directed graph.
  *
- * @param <Vertex> - тип вершин
+ * @param <Vertex> - type of vertex.
  */
 public class DirectionalGraph<Vertex extends Comparable<Vertex>> {
 
@@ -18,13 +18,27 @@ public class DirectionalGraph<Vertex extends Comparable<Vertex>> {
     public DirectionalGraph() {
     }
 
-    public void AddVertexIfNotExist(Vertex vertex) {
+
+    /**
+     * Add new vertex to graph (ignore operation if it already exists).
+     *
+     * @param vertex — new vertex.
+     */
+    public void AddVertex(Vertex vertex) {
         if (graph.containsKey(vertex)) {
             return;
         }
         graph.put(vertex, new ArrayList<>());
     }
 
+
+    /**
+     * Add oriented edge from vertex `from` to vertex `to`.
+     * If some vertex not exist, operation will be ignored.
+     *
+     * @param from beginning of oriented edge.
+     * @param to   end of oriented edge.
+     */
     public void AddEdge(Vertex from, Vertex to) {
         if (!graph.containsKey(to) || !graph.containsKey(from)) {
             return;
@@ -35,6 +49,13 @@ public class DirectionalGraph<Vertex extends Comparable<Vertex>> {
         graph.put(from, neighbours);
     }
 
+
+    /**
+     * Tries to find a cycle. If such exist, it will be returned.
+     * Otherwise, will be returned empty list.
+     *
+     * @return List of vertex, which forms cycle, if such exists. Or Empty, otherwise.
+     */
     public List<Vertex> GetCycle() {
         if (graph.isEmpty()) {
             return List.of();
@@ -59,6 +80,14 @@ public class DirectionalGraph<Vertex extends Comparable<Vertex>> {
         return List.of();
     }
 
+    /**
+     * Using dfs, tries to find a cycle(to meet VISITED vertex).
+     * Also, it changes colors of vertex.
+     *
+     * @param current — vertex which will be proceeded in current function.
+     * @param colors  — maps vertex to its type -- NOT_VISITED, VISITED, FINISHED.
+     * @return true — if we meet VISITED vertex. false, otherwise.
+     */
     private boolean checkCycles(Vertex current, Map<Vertex, Integer> colors) {
         colors.put(current, VISITED);
         for (var next : graph.get(current)) {
@@ -76,16 +105,31 @@ public class DirectionalGraph<Vertex extends Comparable<Vertex>> {
         return false;
     }
 
+    /**
+     * Does topological sort of current state of graph
+     *
+     * @return Vertex in topological order.
+     */
     public List<Vertex> GetTopSort() {
         List<Vertex> result = new ArrayList<>();
         Set<Vertex> visited = new HashSet<>();
-        for (var vertex : getKeys()) {
+        var keys = getKeys();
+        keys.sort(Comparator.reverseOrder());
+        for (var vertex : keys) {
             processTopSort(vertex, visited, result);
         }
         Collections.reverse(result);
         return result;
     }
 
+
+    /**
+     * Auxiliary function to implement topsort using dfs (in O(n) time)
+     *
+     * @param current — current proceeded vertex
+     * @param visited — already proceeded set of vertex
+     * @param result  — topsort result
+     */
     private void processTopSort(Vertex current, Set<Vertex> visited, List<Vertex> result) {
         if (visited.contains(current)) {
             return;
@@ -101,7 +145,12 @@ public class DirectionalGraph<Vertex extends Comparable<Vertex>> {
     }
 
 
+    /**
+     * List of vertex.
+     *
+     * @return List of vertex.
+     */
     private List<Vertex> getKeys() {
-        return graph.keySet().stream().sorted(Comparator.reverseOrder()).toList();
+        return graph.keySet().stream().toList();
     }
 }

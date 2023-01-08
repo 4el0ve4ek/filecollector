@@ -8,13 +8,13 @@ import java.nio.file.Path;
 
 
 /**
- * FilesReader -- читает  содержимое файлов, находящихся локально
+ * LocalFileReader — reads files from local storage.
  */
-public class LocalFilesReader implements Reader {
+public class LocalFileReader implements FileReader {
 
     private final Logger logger;
 
-    public LocalFilesReader(Logger logger) {
+    public LocalFileReader(Logger logger) {
         this.logger = logger;
     }
 

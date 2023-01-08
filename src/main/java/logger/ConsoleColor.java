@@ -1,15 +1,18 @@
 package main.java.logger;
 
-public enum Color {
+/**
+ * Contains constants for different console color.
+ */
+enum ConsoleColor {
     RESET("\u001B[0m"),
 
-    ERROR("\u001B[31m"),
+    ERROR("\u001B[31m"), // Red.
 
-    WARN("\u001B[33m");
+    WARN("\u001B[33m");  // Yellow.
 
     private final String consoleName;
 
-    Color(String consoleName) {
+    ConsoleColor(String consoleName) {
         this.consoleName = consoleName;
     }
 
